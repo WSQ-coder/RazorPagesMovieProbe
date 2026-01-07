@@ -1,0 +1,140 @@
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Threading.Tasks;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.AspNetCore.Mvc.RazorPages;
+//using Microsoft.AspNetCore.Mvc.Rendering;
+//using RazorPagesMovie.Models;
+
+//namespace RazorPagesMovie.Pages.Product
+//{
+//    public class CreateModel : PageModel
+//    {
+//        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+
+//        public CreateModel(RazorPagesMovie.Models.ArtMarketDbContext context)
+//        {
+//            _context = context;
+//        }
+
+//        public IActionResult OnGet()
+//        {
+//        ViewData["IdIndivBuyer"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
+//        ViewData["IdSeller"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
+//            return Page();
+//        }
+
+//        [BindProperty]
+//        public Models.Product Product { get; set; } = default!;
+
+//        // For more information, see https://aka.ms/RazorPagesCRUD.
+//        public async Task<IActionResult> OnPostAsync()
+//        {
+//            if (!ModelState.IsValid)
+//            {
+//                return Page();
+//            }
+
+//            _context.Products.Add(Product);
+//            await _context.SaveChangesAsync();
+
+//            return RedirectToPage("./Index");
+//        }
+//    }
+//}
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using RazorPagesMovie.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace RazorPagesMovie.Pages.Product
+{
+    [Bind(
+        "Product.Name",
+        "Product.TypeArt",
+        "Product.IdSeller",
+        "Product.QuantityForSale",
+        "Product.Price",
+        "Product.Status",
+        "Product.IdIndivBuyer"
+    )]
+    public class CreateModel : PageModel
+    {
+        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+
+        public CreateModel(RazorPagesMovie.Models.ArtMarketDbContext context)
+        {
+            _context = context;
+        }
+
+        public IActionResult OnGet()
+        {
+            PopulateDropDowns();
+            return Page();
+        }
+
+        [BindProperty]
+        public Models.Product Product { get; set; } = default!;
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                PopulateDropDowns();
+                return Page();
+            }
+
+            // --- ЯВНАЯ УСТАНОВКА NULL ---
+            // Если пришло значение 0 (что может случиться, если value="0" или произошла ошибка привязки),
+            // мы принудительно ставим null, чтобы в БД записалось пустое поле.
+            // Модель Product.IdIndivBuyer является int? (Nullable<int>)
+            if (Product.IdIndivBuyer == 0)
+            {
+                Product.IdIndivBuyer = null;
+            }
+
+            _context.Products.Add(Product);
+            await _context.SaveChangesAsync();
+
+            return RedirectToPage("./Index");
+        }
+
+        private void PopulateDropDowns()
+        {
+            // 1. Покупатели (IdIndivBuyer)
+            var buyers = _context.Accounts
+                                 .Include(a => a.IdRoleNavigation)
+                                 .Where(a => a.IdRoleNavigation != null && a.IdRoleNavigation.RoleName == "buyer")
+                                 .ToList();
+
+            var buyersSelectList = new SelectList(buyers, "IdAccount", "AccountName");
+            var items = buyersSelectList.ToList();
+
+            // Добавляем пустой пункт. 
+            // Value = "" автоматически превратится в null для поля int?
+            items.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "— Выберите покупателя (Необязательно) —",
+                Selected = true
+            });
+
+            ViewData["IdIndivBuyer"] = items;
+
+            // 2. Продавцы (IdSeller)
+            var sellers = _context.Accounts
+                                  .Include(a => a.IdRoleNavigation)
+                                  .Where(a => a.IdRoleNavigation != null && a.IdRoleNavigation.RoleName == "seller")
+                                  .ToList();
+
+            ViewData["IdSeller"] = new SelectList(sellers, "IdAccount", "AccountName");
+        }
+    }
+}

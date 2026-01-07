@@ -1,0 +1,60 @@
+﻿@page
+@model RazorPagesMovie.Pages.ItemPurchase.IndexModel
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-page="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.ItemPurchase[0].QuantityInPurchase)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ItemPurchase[0].PriceInPurchase)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ItemPurchase[0].StatusItem)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ItemPurchase[0].IdProductNavigation)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ItemPurchase[0].IdPurchaseNavigation)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.ItemPurchase) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.QuantityInPurchase)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PriceInPurchase)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StatusItem)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdProductNavigation.IdProduct)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IdPurchaseNavigation.IdPurchase)
+            </td>
+            <td>
+                <a asp-page="./Edit" asp-route-id="@item.IdItemPurchase">Edit</a> |
+                <a asp-page="./Details" asp-route-id="@item.IdItemPurchase">Details</a> |
+                <a asp-page="./Delete" asp-route-id="@item.IdItemPurchase">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

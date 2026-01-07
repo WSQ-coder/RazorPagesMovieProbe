@@ -1,0 +1,45 @@
+﻿@page
+@model RazorPagesMovie.Pages.ConnectProductMaterial.DetailsModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>ConnectProductMaterial</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.IdProductNavigation.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.IdProductNavigation.Name)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.IdMaterialNavigation.MaterialName)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.IdMaterialNavigation.MaterialName)
+        </dd>
+
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.Quantity)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.Quantity)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.Unit)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.Unit)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-page="./Edit" asp-route-id="@Model.ConnectProductMaterial.Id">Edit</a> |
+    <a asp-page="./Index">Back to List</a>
+</div>

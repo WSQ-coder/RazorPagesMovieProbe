@@ -1,0 +1,57 @@
+﻿@page
+@model RazorPagesMovie.Pages.Purchase.CreateModel
+
+        @{
+        ViewData["Title"] = "Create";
+        }
+        
+        <h1>Create</h1>
+        
+    <h4>Purchase</h4>
+    <hr />
+    <div class="row">
+    <div class="col-md-4">
+    <form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Purchase.NumberPurchase" class="control-label"></label>
+                <input asp-for="Purchase.NumberPurchase" class="form-control" />
+                <span asp-validation-for="Purchase.NumberPurchase" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Purchase.IdSeller" class="control-label"></label>
+                <select asp-for="Purchase.IdSeller" class ="form-control" asp-items="ViewBag.IdSeller" ></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Purchase.IdBuyer" class="control-label"></label>
+                <select asp-for="Purchase.IdBuyer" class ="form-control" asp-items="ViewBag.IdBuyer" ></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="Purchase.AddressDeparture" class="control-label"></label>
+                <input asp-for="Purchase.AddressDeparture" class="form-control" />
+                <span asp-validation-for="Purchase.AddressDeparture" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Purchase.AddressReceiving" class="control-label"></label>
+                <input asp-for="Purchase.AddressReceiving" class="form-control" />
+                <span asp-validation-for="Purchase.AddressReceiving" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Purchase.MethodDelivery" class="control-label"></label>
+                <input asp-for="Purchase.MethodDelivery" class="form-control" />
+                <span asp-validation-for="Purchase.MethodDelivery" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-page="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

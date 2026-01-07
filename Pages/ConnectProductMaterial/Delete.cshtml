@@ -1,0 +1,46 @@
+﻿@page
+@model RazorPagesMovie.Pages.ConnectProductMaterial.DeleteModel
+
+@{
+    ViewData["Title"] = "Delete";
+}
+
+<h1>Delete</h1>
+
+<h3>Are you sure you want to delete this?</h3>
+<div>
+    <h4>ConnectProductMaterial</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.Quantity)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.Quantity)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.Unit)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.Unit)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.IdMaterialNavigation)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.IdMaterialNavigation.IdMaterial)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.ConnectProductMaterial.IdProductNavigation)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ConnectProductMaterial.IdProductNavigation.IdProduct)
+        </dd>
+    </dl>
+    
+    <form method="post">
+        <input type="hidden" asp-for="ConnectProductMaterial.Id" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-page="./Index">Back to List</a>
+    </form>
+</div>
