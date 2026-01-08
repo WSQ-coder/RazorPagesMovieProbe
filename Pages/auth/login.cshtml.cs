@@ -57,7 +57,7 @@ public class LoginModel : PageModel
 
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
-        return Redirect("/admintest");
+        return Redirect("/test-username");
         if (string.IsNullOrEmpty(ReturnUrl) || ReturnUrl == "/")
             return Redirect("/");
         else

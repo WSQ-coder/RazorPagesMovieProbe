@@ -1,0 +1,16 @@
+﻿@page "/test-username"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,user")]
+@model IndexModel
+
+<h2>Welcome</h2>
+<p>Name: @Model.Name</p>
+<p>Role: @Model.Role</p>
+
+<p><a href="/test-admin">страница только для админов</a></p>
+<p><a href="/logout">Logout</a></p>
+
+
+@if (User.IsInRole("admin"))
+{   <p>Этот текст видят только администраторы.</p>
+    <a href="/test-admin">Админка</a>
+}
