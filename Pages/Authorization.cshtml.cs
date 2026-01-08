@@ -1,7 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using RazorPagesMovie.Models;
 using Microsoft.EntityFrameworkCore;
+//using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using RazorPagesMovie.Models;
+//using System.Data;
+using System.Security.Claims;
 
 namespace RazorPagesMovie.Pages
 {
@@ -26,6 +31,8 @@ namespace RazorPagesMovie.Pages
         {
         }
 
+
+
         public async Task<IActionResult> OnPostAsync()
         {
             if (string.IsNullOrWhiteSpace(LoginInput) || string.IsNullOrWhiteSpace(Password))
@@ -42,12 +49,8 @@ namespace RazorPagesMovie.Pages
                     a.Password == Password);
 
             // 💡 НАЧАЛО: ЛОГИРОВАНИЕ ДЛЯ ОТЛАДКИ
-            if (user == null)
-            {
-                Console.WriteLine($"❌ ПОЛЬЗОВАТЕЛЬ НЕ НАЙДЕН! LoginInput='{LoginInput}', Password='{Password}'");
-            }
-            else
-            {
+            if (user == null) {Console.WriteLine($"❌ ПОЛЬЗОВАТЕЛЬ НЕ НАЙДЕН! LoginInput='{LoginInput}', Password='{Password}'"); }
+            else  {
                 string roleName = user.IdRoleNavigation?.RoleName ?? "null";
                 Console.WriteLine($"✅ НАЙДЕН ПОЛЬЗОВАТЕЛЬ! Имя='{user.AccountName}', Email='{user.Email}', Роль='{roleName}'");
             }
@@ -55,9 +58,30 @@ namespace RazorPagesMovie.Pages
 
             if (user != null && user.IdRoleNavigation != null)
             {
-                // Сохраняем данные в сессии
-                HttpContext.Session.SetString("UserRole", user.IdRoleNavigation.RoleName);
-                HttpContext.Session.SetString("UserName", user.AccountName);
+                string accountName = user.AccountName ?? "null";
+                string roleName = user.IdRoleNavigation?.RoleName ?? "null";
+                string email = user.Email;
+
+                // сохраняем логин, емайл, роль пользователя в Claim и куку
+                var claims = new List<Claim>
+                {
+                    new(ClaimTypes.Name,  accountName),
+                    new(ClaimTypes.Email, email),
+                    new(ClaimTypes.Role,  roleName)
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                var principal = new ClaimsPrincipal(identity);
+
+                // запись в куки зашифрованной строки с логином, емайл, ролью
+                // Настройка свойств аутентификации
+                var authProperties = new AuthenticationProperties
+                {  // Указываем, что кука будет сохранена и не удалится при закрытии браузера
+                    IsPersistent = true,
+                    // Устанавливаем срок действия 5 минут
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(5)
+                };
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
+
 
                 Console.WriteLine($"➡️ Перенаправление по роли: {user.IdRoleNavigation.RoleName}");
 

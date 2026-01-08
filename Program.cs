@@ -22,7 +22,7 @@ builder.Services.AddDbContext<RazorPagesMovie.Models.ArtMarketDbContext>(options
 // включаем сервис аутонтификации на основе куки
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
-    {   options.LoginPath = "/login";
+    {   options.LoginPath = "/Authorization";
         options.AccessDeniedPath = "/accessdenied";
     });
 builder.Services.AddAuthorization();

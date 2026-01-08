@@ -1,13 +1,14 @@
 ﻿@{
-    // Получаем имя и роль напрямую из клеймов текущего пользователя
+    // Получаем имя и роль напрямую из Claims текущего пользователя
     var userName = User.Identity?.IsAuthenticated == true
         ? User.FindFirst(System.Security.Claims.ClaimsIdentity.DefaultNameClaimType)?.Value
         : "Anonim";
 
     var userRole = User.Identity?.IsAuthenticated == true
         ? User.FindFirst(System.Security.Claims.ClaimsIdentity.DefaultRoleClaimType)?.Value
-        : "Anonim";
+        : "NoLogon";
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,7 +96,7 @@
                         }
                         else
                         {
-                            <a asp-page="/auth/login" class="login-button">
+                            <a asp-page="/Authorization" class="login-button">
                                 <div class="login-icon">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                         <path d="M8 8a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001.246-.154.986-.832 1.664-.189.139-.397.289-.63.44-.79.545-2.123 1.184-3.442 1.184-1.32 0-2.653-.639-3.442-1.184-.233-.151-.441-.3-.63-.44-.678-.678-.832-1.418-.832-1.664 0-.004.001-.008.001-.013 0-.013-.008-.026-.016-.037-.02-.029-.03-.055-.037-.08-.007-.025-.009-.05-.009-.075 0-.042.013-.083.032-0.12.03-.055.07-.115.12-.173z" />
