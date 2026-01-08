@@ -1,0 +1,27 @@
+﻿@page "/login"
+@model LoginModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login Form</h2>
+    <form method="post">
+        <!-- Скрытый токен будет добавлен автоматически тег-хелпером asp-for -->
+        <!-- При просмотре HTML в браузере будет шифрованная фигня -->
+        <p>
+            <label>Email</label><br />
+            <input asp-for="Email" />
+        </p>
+        <p>
+            <label>Password</label><br />
+            <input type="password" asp-for="Password" />
+        </p>
+        <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+        <input type="submit" value="Login" />
+    </form>
+</body>
+</html>
