@@ -1,61 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.CatalogForMaterial
+namespace RazorPagesMovie.Pages.CatalogForMaterial;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public DeleteModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(RazorPagesMovie.Models.ArtMarketDbContext context)
+    [BindProperty]
+    public Models.CatalogForMaterial CatalogForMaterial { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var material = await _context.CatalogForMaterials.FindAsync(id);
+        if (material == null) return NotFound();
+
+        CatalogForMaterial = material;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var material = await _context.CatalogForMaterials.FindAsync(id);
+        if (material != null)
         {
-            _context = context;
+            _context.CatalogForMaterials.Remove(material);
+            await _context.SaveChangesAsync();
         }
 
-        [BindProperty]
-        public Models.CatalogForMaterial CatalogForMaterial { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var catalogformaterial = await _context.CatalogForMaterials.FirstOrDefaultAsync(m => m.IdMaterial == id);
-
-            if (catalogformaterial is not null)
-            {
-                CatalogForMaterial = catalogformaterial;
-
-                return Page();
-            }
-
-            return NotFound();
-        }
-
-        public async Task<IActionResult> OnPostAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var catalogformaterial = await _context.CatalogForMaterials.FindAsync(id);
-            if (catalogformaterial != null)
-            {
-                CatalogForMaterial = catalogformaterial;
-                _context.CatalogForMaterials.Remove(CatalogForMaterial);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
-        }
+        return RedirectToPage("./Index");
     }
 }

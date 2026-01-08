@@ -1,0 +1,128 @@
+﻿@page "{id:int}"
+@model RazorPagesMovie.Pages.ProductionPurchase.ChatModel
+@{
+    ViewData["Title"] = "Чат по заказу";
+    var userRole = ViewData["UserRole"]?.ToString() ?? "buyer";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Чат по заказу №@Model.Order.IdProductionPurchase</h1>
+        <a class="btn btn-secondary" asp-page="/Seller/Index">
+            <i class="bi bi-arrow-left"></i> Назад
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h5 mb-0">Информация о заказе</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Продавец:</strong> @Model.Order.IdSellerNavigation?.AccountName</p>
+            <p><strong>Покупатель:</strong> @Model.Order.IdBuyerNavigation?.AccountName</p>
+            @if (Model.Order.IdProduct.HasValue)
+            {
+                <p><strong>Товар:</strong> Создан (ID: @Model.Order.IdProduct)</p>
+            }
+            else
+            {
+                <p><strong>Статус:</strong> Ожидает создания товара</p>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <h2 class="h5 mb-0">Переписка</h2>
+        </div>
+        <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+            @if (string.IsNullOrEmpty(Model.Order.TextAccounts))
+            {
+                <p class="text-muted">Переписка пока пуста. Напишите первое сообщение!</p>
+            }
+            else
+            {
+                <div class="messages">
+                    @foreach (var message in Model.Order.TextAccounts.Split(new[] { "\n\n" }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var lines = message.Split(new[] { '\n' }, 2);
+                        var header = lines[0];
+                        var content = lines.Length > 1 ? lines[1] : "";
+
+                        var isSellerMessage = header.Contains("Продавец:");
+                        var isBuyerMessage = header.Contains("Покупатель:");
+
+                        <div class="message mb-3 p-3 rounded @((isSellerMessage && userRole == "seller") || (!isSellerMessage && userRole == "buyer") ? "bg-primary text-white ms-auto" : "bg-light")" style="max-width: 80%;">
+                            <div class="message-header small fw-bold mb-1">
+                                @Html.Raw(header.Replace("[", "<span class='text-muted'>[").Replace("]", "]</span>"))
+                            </div>
+                            <div class="message-content">
+                                @content
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header" style="background-color: #22dd77; color: white;">
+            <h2 class="h5 mb-0">Новое сообщение</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <input type="hidden" name="id" value="@Model.Order.IdProductionPurchase" />
+                <div class="mb-3">
+                    <textarea asp-for="NewMessage" class="form-control" rows="3" placeholder="Введите ваше сообщение..."></textarea>
+                    <span asp-validation-for="NewMessage" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-send"></i> Отправить сообщение
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .messages {
+        display: flex;
+        flex-direction: column;
+    }
+    .message {
+        margin-bottom: 1rem;
+        word-wrap: break-word;
+    }
+    .message-header {
+        font-size: 0.85em;
+    }
+    .message-content {
+        line-height: 1.4;
+    }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        // Автоматическая прокрутка к последнему сообщению
+        document.addEventListener('DOMContentLoaded', function() {
+            const messageContainer = document.querySelector('.card-body[style*="max-height"]');
+            if (messageContainer) {
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+            }
+
+            // Автоматическая прокрутка после отправки сообщения
+            document.querySelector('form').addEventListener('submit', function() {
+                setTimeout(function() {
+                    const container = document.querySelector('.card-body[style*="max-height"]');
+                    if (container) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                }, 500);
+            });
+        });
+    </script>
+}

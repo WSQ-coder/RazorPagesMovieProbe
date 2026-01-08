@@ -1,42 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.Purchase
+namespace RazorPagesMovie.Pages.Purchase;
+
+public class DetailsModel : PageModel
 {
-    public class DetailsModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public DetailsModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public DetailsModel(RazorPagesMovie.Models.ArtMarketDbContext context)
-        {
-            _context = context;
-        }
+    public Models.Purchase Purchase { get; set; } = default!;
 
-        public Models.Purchase Purchase { get; set; } = default!;
+    public async Task<IActionResult> OnGetAsync(int? id)
+    {
+        if (id == null) return NotFound();
 
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+        var purchase = await _context.Purchases
+            .Include(p => p.IdBuyerNavigation)
+            .Include(p => p.IdSellerNavigation)
+            .FirstOrDefaultAsync(m => m.IdPurchase == id);
 
-            var purchase = await _context.Purchases.FirstOrDefaultAsync(m => m.IdPurchase == id);
+        if (purchase == null) return NotFound();
 
-            if (purchase is not null)
-            {
-                Purchase = purchase;
-
-                return Page();
-            }
-
-            return NotFound();
-        }
+        Purchase = purchase;
+        return Page();
     }
 }

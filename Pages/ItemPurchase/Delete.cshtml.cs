@@ -1,61 +1,48 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.ItemPurchase
+namespace RazorPagesMovie.Pages.ItemPurchase;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public DeleteModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(RazorPagesMovie.Models.ArtMarketDbContext context)
+    [BindProperty]
+    public Models.ItemPurchase ItemPurchase { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var item = await _context.ItemPurchases
+            .Include(i => i.IdProductNavigation)
+            .Include(i => i.IdPurchaseNavigation)
+            .FirstOrDefaultAsync(m => m.IdItemPurchase == id);
+
+        if (item == null) return NotFound();
+
+        ItemPurchase = item;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var item = await _context.ItemPurchases.FindAsync(id);
+        if (item != null)
         {
-            _context = context;
+            _context.ItemPurchases.Remove(item);
+            await _context.SaveChangesAsync();
         }
 
-        [BindProperty]
-        public Models.ItemPurchase ItemPurchase { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var itempurchase = await _context.ItemPurchases.FirstOrDefaultAsync(m => m.IdItemPurchase == id);
-
-            if (itempurchase is not null)
-            {
-                ItemPurchase = itempurchase;
-
-                return Page();
-            }
-
-            return NotFound();
-        }
-
-        public async Task<IActionResult> OnPostAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var itempurchase = await _context.ItemPurchases.FindAsync(id);
-            if (itempurchase != null)
-            {
-                ItemPurchase = itempurchase;
-                _context.ItemPurchases.Remove(ItemPurchase);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
-        }
+        return RedirectToPage("./Index");
     }
 }

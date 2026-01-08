@@ -1,61 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.ProductionPurchase
+namespace RazorPagesMovie.Pages.ProductionPurchase;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public DeleteModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(RazorPagesMovie.Models.ArtMarketDbContext context)
+    [BindProperty]
+    public Models.ProductionPurchase ProductionPurchase { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var item = await _context.ProductionPurchases
+            .Include(p => p.IdBuyerNavigation)
+            .Include(p => p.IdSellerNavigation)
+            .Include(p => p.IdProductNavigation)
+            .FirstOrDefaultAsync(m => m.IdProductionPurchase == id);
+
+        if (item == null) return NotFound();
+
+        ProductionPurchase = item;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var item = await _context.ProductionPurchases.FindAsync(id);
+        if (item != null)
         {
-            _context = context;
+            _context.ProductionPurchases.Remove(item);
+            await _context.SaveChangesAsync();
         }
 
-        [BindProperty]
-        public Models.ProductionPurchase ProductionPurchase { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var productionpurchase = await _context.ProductionPurchases.FirstOrDefaultAsync(m => m.IdProductionPurchase == id);
-
-            if (productionpurchase is not null)
-            {
-                ProductionPurchase = productionpurchase;
-
-                return Page();
-            }
-
-            return NotFound();
-        }
-
-        public async Task<IActionResult> OnPostAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var productionpurchase = await _context.ProductionPurchases.FindAsync(id);
-            if (productionpurchase != null)
-            {
-                ProductionPurchase = productionpurchase;
-                _context.ProductionPurchases.Remove(ProductionPurchase);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
-        }
+        return RedirectToPage("./Index");
     }
 }

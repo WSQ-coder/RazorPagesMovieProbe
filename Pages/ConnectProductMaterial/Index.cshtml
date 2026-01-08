@@ -2,53 +2,36 @@
 @model RazorPagesMovie.Pages.ConnectProductMaterial.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Связи товаров и материалов";
 }
 
-<h1>Список связей товара и материала</h1>
-
+<h1>Связи товаров и материалов</h1>
 <p>
-    <a asp-page="Create">Create New</a>
+    <a asp-page="Create" class="btn btn-success">+ Добавить связь</a>
 </p>
-<table class="table">
+
+<table class="table table-striped">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.ConnectProductMaterial[0].IdProductNavigation.Name)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ConnectProductMaterial[0].IdMaterialNavigation.MaterialName)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ConnectProductMaterial[0].Quantity)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.ConnectProductMaterial[0].Unit)
-            </th>
-            <th></th>
+            <th>Товар</th>
+            <th>Материал</th>
+            <th>Количество</th>
+            <th>Ед. изм.</th>
+            <th>Действия</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var item in Model.ConnectProductMaterial)
         {
             <tr>
+                <td>@item.IdProductNavigation?.Name</td>
+                <td>@item.IdMaterialNavigation?.MaterialName</td>
+                <td>@item.Quantity.ToString("F2")</td>
+                <td>@item.Unit</td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.IdProductNavigation.Name)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.IdMaterialNavigation.MaterialName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Quantity)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.Unit)
-                </td>
-
-                <td>
-                    <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
-                    <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
+                    <a asp-page="./Edit" asp-route-id="@item.Id">Изменить</a> |
+                    <a asp-page="./Details" asp-route-id="@item.Id">Подробности</a> |
+                    <a asp-page="./Delete" asp-route-id="@item.Id">Удалить</a>
                 </td>
             </tr>
         }

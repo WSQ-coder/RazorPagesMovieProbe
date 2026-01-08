@@ -1,46 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.ProductionPurchase
+namespace RazorPagesMovie.Pages.ProductionPurchase;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public CreateModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public CreateModel(RazorPagesMovie.Models.ArtMarketDbContext context)
-        {
-            _context = context;
-        }
+    [BindProperty]
+    public Models.ProductionPurchase ProductionPurchase { get; set; } = default!;
 
-        public IActionResult OnGet()
+    public SelectList SellerList { get; set; } = default!;
+    public SelectList BuyerList { get; set; } = default!;
+    public SelectList ProductList { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        await LoadListsAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
         {
-        ViewData["IdBuyer"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
-        ViewData["IdProduct"] = new SelectList(_context.Products, "IdProduct", "IdProduct");
-        ViewData["IdSeller"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
+            await LoadListsAsync();
             return Page();
         }
 
-        [BindProperty]
-        public Models.ProductionPurchase ProductionPurchase { get; set; } = default!;
-
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        try
         {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
             _context.ProductionPurchases.Add(ProductionPurchase);
             await _context.SaveChangesAsync();
-
             return RedirectToPage("./Index");
         }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Ошибка при сохранении: " + ex.Message);
+            await LoadListsAsync();
+            return Page();
+        }
+    }
+
+    private async Task LoadListsAsync()
+    {
+        var accounts = await _context.Accounts
+            .Select(a => new { a.IdAccount, a.AccountName })
+            .ToListAsync();
+
+        var products = await _context.Products
+            .Select(p => new { p.IdProduct, p.Name })
+            .ToListAsync();
+
+        SellerList = new SelectList(accounts, "IdAccount", "AccountName");
+        BuyerList = new SelectList(accounts, "IdAccount", "AccountName");
+        ProductList = new SelectList(products, "IdProduct", "Name");
     }
 }

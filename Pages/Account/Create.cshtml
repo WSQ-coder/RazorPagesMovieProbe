@@ -1,4 +1,5 @@
 ﻿@page
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin")]
 @model RazorPagesMovie.Pages.Account.CreateModel
 
 @{

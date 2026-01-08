@@ -7,55 +7,46 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.ConnectProductMaterial
+namespace RazorPagesMovie.Pages.ConnectProductMaterial;
+
+public class DeleteModel : PageModel
 {
-    public class DeleteModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public DeleteModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public DeleteModel(RazorPagesMovie.Models.ArtMarketDbContext context)
+    [BindProperty]
+    public Models.ConnectProductMaterial ConnectProductMaterial { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var item = await _context.ConnectProductMaterials
+            .Include(c => c.IdProductNavigation)
+            .Include(c => c.IdMaterialNavigation)
+            .FirstOrDefaultAsync(m => m.Id == id);
+
+        if (item == null) return NotFound();
+
+        ConnectProductMaterial = item;
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync(int? id)
+    {
+        if (id == null) return NotFound();
+
+        var item = await _context.ConnectProductMaterials.FindAsync(id);
+        if (item != null)
         {
-            _context = context;
+            _context.ConnectProductMaterials.Remove(item);
+            await _context.SaveChangesAsync();
         }
 
-        [BindProperty]
-        public Models.ConnectProductMaterial ConnectProductMaterial { get; set; } = default!;
-
-        public async Task<IActionResult> OnGetAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var connectproductmaterial = await _context.ConnectProductMaterials.FirstOrDefaultAsync(m => m.Id == id);
-
-            if (connectproductmaterial is not null)
-            {
-                ConnectProductMaterial = connectproductmaterial;
-
-                return Page();
-            }
-
-            return NotFound();
-        }
-
-        public async Task<IActionResult> OnPostAsync(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var connectproductmaterial = await _context.ConnectProductMaterials.FindAsync(id);
-            if (connectproductmaterial != null)
-            {
-                ConnectProductMaterial = connectproductmaterial;
-                _context.ConnectProductMaterials.Remove(ConnectProductMaterial);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToPage("./Index");
-        }
+        return RedirectToPage("./Index");
     }
 }

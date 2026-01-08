@@ -1,45 +1,69 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using RazorPagesMovie.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.ItemPurchase
+namespace RazorPagesMovie.Pages.ItemPurchase;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public CreateModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public CreateModel(RazorPagesMovie.Models.ArtMarketDbContext context)
-        {
-            _context = context;
-        }
+    [BindProperty]
+    public Models.ItemPurchase ItemPurchase { get; set; } = default!;
 
-        public IActionResult OnGet()
+    public SelectList PurchaseList { get; set; } = default!;
+    public SelectList ProductList { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        await LoadListsAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
         {
-        ViewData["IdProduct"] = new SelectList(_context.Products, "IdProduct", "IdProduct");
-        ViewData["IdPurchase"] = new SelectList(_context.Purchases, "IdPurchase", "IdPurchase");
+            await LoadListsAsync();
             return Page();
         }
 
-        [BindProperty]
-        public Models.ItemPurchase ItemPurchase { get; set; } = default!;
-
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        try
         {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
-
             _context.ItemPurchases.Add(ItemPurchase);
             await _context.SaveChangesAsync();
-
             return RedirectToPage("./Index");
         }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Ошибка при сохранении: " + ex.Message);
+            await LoadListsAsync();
+            return Page();
+        }
+    }
+
+    private async Task LoadListsAsync()
+    {
+        var purchases = await _context.Purchases
+            .Select(p => new { p.IdPurchase, p.NumberPurchase })
+            .ToListAsync();
+
+        var products = await _context.Products
+            .Select(p => new { p.IdProduct, p.Name })
+            .ToListAsync();
+
+        PurchaseList = new SelectList(purchases, "IdPurchase", "NumberPurchase");
+        ProductList = new SelectList(products, "IdProduct", "Name");
     }
 }

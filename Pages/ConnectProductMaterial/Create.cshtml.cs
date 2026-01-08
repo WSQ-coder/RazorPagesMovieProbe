@@ -1,50 +1,69 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using RazorPagesMovie.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using RazorPagesMovie.Models;
 
-namespace RazorPagesMovie.Pages.ConnectProductMaterial
+namespace RazorPagesMovie.Pages.ConnectProductMaterial;
+
+public class CreateModel : PageModel
 {
-    public class CreateModel : PageModel
+    private readonly ArtMarketDbContext _context;
+
+    public CreateModel(ArtMarketDbContext context)
     {
-        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
+        _context = context;
+    }
 
-        public CreateModel(RazorPagesMovie.Models.ArtMarketDbContext context)
-        {
-            _context = context;
-        }
+    [BindProperty]
+    public Models.ConnectProductMaterial ConnectProductMaterial { get; set; } = default!;
 
-        public IActionResult OnGet()
+    public SelectList ProductList { get; set; } = default!;
+    public SelectList MaterialList { get; set; } = default!;
+
+    public async Task<IActionResult> OnGetAsync()
+    {
+        await LoadListsAsync();
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostAsync()
+    {
+        if (!ModelState.IsValid)
         {
-            // ИСПРАВЛЕНО: Отображаем название товара (Name)
-            ViewData["IdProduct"] = new SelectList(_context.Products, "IdProduct", "Name");
-            // ИСПРАВЛЕНО: Отображаем название материала (MaterialName)
-            ViewData["IdMaterial"] = new SelectList(_context.CatalogForMaterials, "IdMaterial", "MaterialName");
+            await LoadListsAsync();
             return Page();
         }
 
-        [BindProperty]
-        public Models.ConnectProductMaterial ConnectProductMaterial { get; set; } = default!;
-
-        // For more information, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        try
         {
-            if (!ModelState.IsValid)
-            {
-                // ИСПРАВЛЕНО: При ошибке валидации нужно повторно заполнить ViewData для списков
-                ViewData["IdProduct"] = new SelectList(_context.Products, "IdProduct", "Name");
-                ViewData["IdMaterial"] = new SelectList(_context.CatalogForMaterials, "IdMaterial", "MaterialName");
-                return Page();
-            }
-
             _context.ConnectProductMaterials.Add(ConnectProductMaterial);
             await _context.SaveChangesAsync();
-
             return RedirectToPage("./Index");
         }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", "Ошибка при сохранении: " + ex.Message);
+            await LoadListsAsync();
+            return Page();
+        }
+    }
+
+    private async Task LoadListsAsync()
+    {
+        var products = await _context.Products
+            .Select(p => new { p.IdProduct, p.Name })
+            .ToListAsync();
+
+        var materials = await _context.CatalogForMaterials
+            .Select(m => new { m.IdMaterial, m.MaterialName })
+            .ToListAsync();
+
+        ProductList = new SelectList(products, "IdProduct", "Name");
+        MaterialList = new SelectList(materials, "IdMaterial", "MaterialName");
     }
 }
