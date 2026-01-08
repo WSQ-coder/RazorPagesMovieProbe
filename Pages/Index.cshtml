@@ -1,7 +1,7 @@
 ﻿@page
-@model RazorPagesMovie.Pages.Seller.IndexModel
+@model RazorPagesMovie.Pages.IndexModel
 @{
-    ViewData["Title"] = "Список товаров для заказа";
+    ViewData["Title"] = "Каталог товаров";
 }
 
 <style>
@@ -13,6 +13,8 @@
         border: 1px solid #ddd;
         padding: 15px;
         margin-bottom: 25px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
 
     .personal-block {
@@ -29,6 +31,7 @@
         font-size: 1.2em;
         font-weight: bold;
         margin-bottom: 10px;
+        color: #333;
     }
 
     .product-cards {
@@ -40,25 +43,48 @@
 
     .product-card {
         border: 1px solid #aaa;
-        padding: 10px;
-        width: 180px;
+        padding: 15px;
+        min-width: 180px;
         text-align: center;
         background-color: #fff;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        border-radius: 6px;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
     }
 
     .card-title {
         font-weight: bold;
         margin-bottom: 5px;
+        color: #2c3e50;
+        cursor: pointer;
+        text-decoration: underline;
+        text-decoration-color: #007bff;
+        text-underline-offset: 3px;
+    }
+
+    .card-title:hover {
+        color: #007bff;
+    }
+
+    .card-type {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-bottom: 5px;
     }
 
     .card-price {
-        margin-bottom: 10px;
+        margin-bottom: 15px;
         color: #e44d26;
         font-size: 1.1em;
+        font-weight: bold;
     }
 
     .order-button {
@@ -68,20 +94,31 @@
         border: none;
         cursor: pointer;
         border-radius: 4px;
+        font-weight: 500;
+        transition: background-color 0.2s;
     }
 
     .personal-card .order-button {
         background-color: #ff00a8;
     }
 
+    .personal-card .order-button:hover {
+        background-color: #e60095;
+    }
+
     .general-card .order-button {
         background-color: #007bff;
     }
 
+    .general-card .order-button:hover {
+        background-color: #0069d9;
+    }
+
     .message-box {
-        padding: 10px;
+        padding: 12px 15px;
         margin-bottom: 15px;
         border-radius: 4px;
+        font-size: 0.95em;
     }
 
     .success {
@@ -95,10 +132,110 @@
         color: #721c24;
         border: 1px solid #f5c6cb;
     }
+
+    .info-box {
+        background-color: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
+        padding: 12px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        font-size: 0.9em;
+    }
+
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+
+    .tooltip .tooltiptext {
+        visibility: hidden;
+        width: 250px;
+        background-color: #333;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 8px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -125px;
+        opacity: 0;
+        transition: opacity 0.3s;
+        font-size: 0.85em;
+        line-height: 1.4;
+    }
+
+    .tooltip .tooltiptext::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #333 transparent transparent transparent;
+    }
+
+    .tooltip:hover .tooltiptext {
+        visibility: visible;
+        opacity: 1;
+    }
+
+    .card-details {
+        font-size: 0.85em;
+        color: #6c757d;
+        margin-top: 8px;
+        text-align: left;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.75em;
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .status-available {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .auth-required {
+        text-align: center;
+        padding: 20px;
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 6px;
+        margin: 15px 0;
+    }
 </style>
 
 <div class="product-list-container">
-   <h1>Список товаров</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Каталог товаров</h1>
+        @if (!User.Identity?.IsAuthenticated ?? true)
+        {
+            <div class="auth-required">
+                <i class="bi bi-info-circle me-2"></i>
+                Вы можете просматривать товары без регистрации, но для оформления заказа необходимо <a asp-page="/Account/Login">войти в систему</a>.
+            </div>
+        }
+    </div>
+
+    <!-- Информационная сноска о заказе -->
+    <div class="info-box">
+        <i class="bi bi-info-circle me-2"></i>
+        <strong>Как оформить заказ:</strong> 
+        <span class="tooltip">
+            нажмите на кнопку "Заказать"
+            <span class="tooltiptext">После нажатия на кнопку "Заказать" система создаст новый заказ в статусе "Ожидает подтверждения". Продавец получит уведомление и сможет подтвердить или отклонить ваш заказ. Вы сможете отслеживать статус заказа в личном кабинете.</span>
+        </span>.
+        Для персональных товаров (созданных специально для вас) доступно немедленное оформление заказа.
+    </div>
 
     @* Сообщения об успехе или ошибке после заказа *@
     @if (TempData["SuccessMessage"] != null)
@@ -113,16 +250,25 @@
     @if (Model.IndividualProduct != null)
     {
         <div class="product-block personal-block">
-            <div class="block-header">Блок персональных товаров</div>
-            <p style="font-size: 0.9em; margin-top: -5px; color: #555;">Виден только при наличии товара, созданного художником на заказ для Вас.</p>
+            <div class="block-header">Ваши персональные товары</div>
+            <p style="font-size: 0.9em; margin-top: -5px; color: #555;">Товары, созданные специально для вас по индивидуальному заказу.</p>
             <div class="product-cards">
                 <div class="product-card personal-card">
-                    <div>
-                        <div class="card-title">@Model.IndividualProduct.Name</div>
-                        <div class="card-price">Цена: @Model.IndividualProduct.Price.ToString("C")</div>
+                    <div class="card-type">@Model.IndividualProduct.TypeArt</div>
+                    <div class="card-title">
+                        <a asp-page="/Product/Details" asp-route-id="@Model.IndividualProduct.Id" class="text-decoration-none">
+                            @Model.IndividualProduct.Name
+                        </a>
+                    </div>
+                    <div class="card-price">Цена: @Model.IndividualProduct.Price.ToString("C")</div>
+                    <div class="card-details">
+                        <span class="status-badge status-available">Готов к заказу</span>
                     </div>
                     <form method="post" asp-page-handler="Order" asp-route-productId="@Model.IndividualProduct.Id">
-                        <button type="submit" class="order-button">Заказать</button>
+                        <button type="submit" class="order-button tooltip">
+                            Заказать
+                            <span class="tooltiptext">Оформить заказ на этот индивидуальный товар. После заказа товар будет зарезервирован за вами.</span>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -130,17 +276,27 @@
     }
 
     <div class="product-block general-block">
-        <div class="block-header">Каталог</div>
+        <div class="block-header">Каталог товаров</div>
+        <p style="font-size: 0.9em; margin-top: -5px; color: #555;">Общедоступные товары, доступные для всех покупателей.</p>
         <div class="product-cards">
             @foreach (var product in Model.CatalogProducts)
             {
                 <div class="product-card general-card">
-                    <div>
-                        <div class="card-title">@product.Name</div>
-                        <div class="card-price">Цена: @product.Price.ToString("C")</div>
+                    <div class="card-type">@product.TypeArt</div>
+                    <div class="card-title">
+                        <a asp-page="/Product/Details" asp-route-id="@product.Id" class="text-decoration-none">
+                            @product.Name
+                        </a>
+                    </div>
+                    <div class="card-price">Цена: @product.Price.ToString("C")</div>
+                    <div class="card-details">
+                        <span class="status-badge status-available">В наличии: @product.QuantityForSale шт.</span>
                     </div>
                     <form method="post" asp-page-handler="Order" asp-route-productId="@product.Id">
-                        <button type="submit" class="order-button">Заказать</button>
+                        <button type="submit" class="order-button tooltip @(User.Identity?.IsAuthenticated ?? false ? "" : "disabled")" @(User.Identity?.IsAuthenticated ?? false ? "" : "disabled")>
+                            @(User.Identity?.IsAuthenticated ?? false ? "Заказать" : "Требуется вход")
+                            <span class="tooltiptext">Оформить заказ на этот товар. После заказа продавец подтвердит наличие товара и статус заказа.</span>
+                        </button>
                     </form>
                 </div>
             }
