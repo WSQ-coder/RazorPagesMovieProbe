@@ -15,7 +15,7 @@ builder.Services.AddDbContext<RazorPagesMovie.Models.ArtMarketDbContext>(options
     options.UseNpgsql(builder.Configuration.GetConnectionString("Server=localhost;Database=art_market_db;Username=postgres;Password=1234; Persist Security Info=True"));
     // отладка - вывод логов в консоль
     options.LogTo(Console.WriteLine, LogLevel.Information); // Печатать логи в консоль
-    options.EnableSensitiveDataLogging(); // Чтобы видеть значения параметров (например, само имя пользователя в INSERT)
+    options.EnableSensitiveDataLogging(); // Чтобы видеть значения параметров (имена, пароли, значения переменных в запросах)
 });
 
 // авторизация сделана по примеру https://metanit.com/sharp/aspnet6/13.7.php
