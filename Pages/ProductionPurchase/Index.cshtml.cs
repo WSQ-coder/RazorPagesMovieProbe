@@ -22,5 +22,6 @@ public class IndexModel : PageModel
             .Include(p => p.IdSellerNavigation)
             .Include(p => p.IdProductNavigation)
             .ToListAsync();
+
     }
 }

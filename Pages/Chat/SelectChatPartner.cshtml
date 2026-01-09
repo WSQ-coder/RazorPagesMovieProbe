@@ -1,0 +1,13 @@
+﻿@page
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "admin,seller,buyer")]
+@model RazorPagesMovie.Pages.Chat.SelectChatPartnerModel
+
+<h2>Выбор чата для общения</h2>
+<p>Name: @Model.Name</p>
+<p>Role: @Model.Role</p>
+<p>Email: @Model.Email</p>
+<p>Ваш ID: @Model.IdAccount.Value</p>
+
+<h2>Выберите с кем будете общаться</h2>
+
+

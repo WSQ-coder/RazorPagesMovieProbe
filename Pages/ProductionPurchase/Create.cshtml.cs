@@ -52,7 +52,13 @@ public class CreateModel : PageModel
 
     private async Task LoadListsAsync()
     {
-        var accounts = await _context.Accounts
+        var accountsSeller = await _context.Accounts
+            .Where(a => a.IdRoleNavigation != null && a.IdRoleNavigation.RoleName == "seller")
+            .Select(a => new { a.IdAccount, a.AccountName })
+            .ToListAsync();
+
+        var accountsBuyer = await _context.Accounts
+            .Where(a => a.IdRoleNavigation != null && a.IdRoleNavigation.RoleName == "buyer")
             .Select(a => new { a.IdAccount, a.AccountName })
             .ToListAsync();
 
@@ -60,8 +66,8 @@ public class CreateModel : PageModel
             .Select(p => new { p.IdProduct, p.Name })
             .ToListAsync();
 
-        SellerList = new SelectList(accounts, "IdAccount", "AccountName");
-        BuyerList = new SelectList(accounts, "IdAccount", "AccountName");
+        SellerList = new SelectList(accountsSeller, "IdAccount", "AccountName");
+        BuyerList = new SelectList(accountsBuyer, "IdAccount", "AccountName");
         ProductList = new SelectList(products, "IdProduct", "Name");
     }
 }

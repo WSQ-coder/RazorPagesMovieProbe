@@ -7,6 +7,8 @@
     var userRole = User.Identity?.IsAuthenticated == true
         ? User.FindFirst(System.Security.Claims.ClaimsIdentity.DefaultRoleClaimType)?.Value
         : "NoLogon";
+
+
 }
 
 <!DOCTYPE html>
@@ -80,12 +82,27 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Каталог</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Конфиденциальность</a>
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Chat/SelectChatPartner">Chat</a>
                         </li>
+                        @if (User.IsInRole("seller"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Seller/Index">Продажа</a>
+                            </li>
+                        }
+
+
                     </ul>
                     <div class="navbar-nav flex-grow-1 align-items-center">
                         <span class="nav-item me-3">Name: <strong>@userName</strong></span>
                         <span class="nav-item me-3">Role: <strong>@userRole</strong></span>
+
+                        @* на время отладки *@
+                        @if (int.TryParse(User.FindFirst("idaccount")?.Value, out int accountId))
+                        {    <span class="nav-item me-3">ID аккаунта: @accountId</span>
+                        }
+                        
+
                     </div>
 
                     <!-- Кнопка входа/выхода в правом верхнем углу -->

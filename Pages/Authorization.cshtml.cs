@@ -61,13 +61,15 @@ namespace RazorPagesMovie.Pages
                 string accountName = user.AccountName ?? "null";
                 string roleName = user.IdRoleNavigation?.RoleName ?? "null";
                 string email = user.Email;
+                int IdAccount = user.IdAccount;
 
                 // сохраняем логин, емайл, роль пользователя в Claim и куку
                 var claims = new List<Claim>
                 {
                     new(ClaimTypes.Name,  accountName),
                     new(ClaimTypes.Email, email),
-                    new(ClaimTypes.Role,  roleName)
+                    new(ClaimTypes.Role,  roleName),
+                    new("idaccount",      IdAccount.ToString())
                 };
                 var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                 var principal = new ClaimsPrincipal(identity);
