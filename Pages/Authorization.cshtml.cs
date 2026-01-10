@@ -79,8 +79,8 @@ namespace RazorPagesMovie.Pages
                 var authProperties = new AuthenticationProperties
                 {  // Указываем, что кука будет сохранена и не удалится при закрытии браузера
                     IsPersistent = true,
-                    // Устанавливаем срок действия 5 минут
-                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(5)
+                    // Устанавливаем срок действия куки 15 минут
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddMinutes(15)
                 };
                 await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal, authProperties);
 
