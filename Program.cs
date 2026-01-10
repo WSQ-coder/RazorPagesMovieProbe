@@ -1,9 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
-
-//фигню написал и сохранил
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Включим поддержку Pages/ с файлами *.cshtml + *.cshtml.cs 
