@@ -1,0 +1,166 @@
+﻿@page
+@model RazorPagesMovie.Pages.Order.CreateModel
+@{
+    ViewData["Title"] = "Оформление заказа";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="h4 mb-0">Оформление заказа: @Model.Product?.Name</h2>
+        </div>
+        <div class="card-body">
+            <!-- ДОБАВЛЕНО: id формы и novalidate -->
+            <form method="post" id="orderForm" novalidate>
+                <input type="hidden" asp-for="ProductId" id="productId" />
+                <!-- ДОБАВЛЕНО: id для price -->
+                <input type="hidden" asp-for="Price" value="@Model.Product?.Price" id="productPrice" />
+
+                <div class="mb-3">
+                    <label class="form-label">Количество товара</label>
+                    <!-- ДОБАВЛЕНО: id для quantity -->
+                    <input type="number" asp-for="Quantity" class="form-control"
+                           min="1" max="100" required id="quantityInput" />
+                    <div class="form-text">
+                        Доступно: @Model.Product?.QuantityForSale шт. | Максимум 100 шт. за один заказ
+                    </div>
+                    <span asp-validation-for="Quantity" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Способ доставки</label>
+                    <!-- ДОБАВЛЕНО: id для methodDelivery -->
+                    <select asp-for="MethodDelivery" class="form-control" required id="methodDelivery">
+                        <option value="">Выберите способ доставки</option>
+                        <option value="courier">Курьерская доставка</option>
+                        <option value="pickup">Самовывоз</option>
+                        <option value="mail">Почтовая доставка</option>
+                    </select>
+                    <span asp-validation-for="MethodDelivery" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Адрес получения товара</label>
+                    <!-- ДОБАВЛЕНО: id для address -->
+                    <textarea asp-for="AddressReceiving" class="form-control" rows="3"
+                              required id="addressReceiving"></textarea>
+                    <div class="form-text">
+                        Укажите полный адрес для доставки.
+                    </div>
+                    <span asp-validation-for="AddressReceiving" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Комментарий к заказу (опционально)</label>
+                    <textarea asp-for="Comment" class="form-control" rows="2" id="comment"></textarea>
+                </div>
+
+                <div class="alert alert-info">
+                    <strong>Итоговая стоимость:</strong> <span id="totalPrice">@Model.TotalPrice.ToString("C")</span>
+                    <br />
+                    <small>Стоимость доставки будет уточнена продавцом</small>
+                </div>
+
+                <button type="submit" class="btn btn-success" id="submitBtn">
+                    <i class="bi bi-check-circle"></i> Подтвердить заказ
+                </button>
+                <a asp-page="/Index" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Отмена
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // ДОБАВЛЕНО: Отладка в глобальной области
+        console.log('Скрипт загружается...');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM загружен, инициализируем...');
+
+            // Находим все элементы
+            const form = document.getElementById('orderForm');
+            const quantityInput = document.getElementById('quantityInput');
+            const priceInput = document.getElementById('productPrice');
+            const totalPriceElement = document.getElementById('totalPrice');
+            const submitBtn = document.getElementById('submitBtn');
+
+            // Отладочная информация
+            console.log('Найдены элементы:', {
+                form: !!form,
+                quantityInput: !!quantityInput,
+                priceInput: !!priceInput,
+                totalPriceElement: !!totalPriceElement,
+                submitBtn: !!submitBtn
+            });
+
+            if (!quantityInput || !priceInput || !totalPriceElement) {
+                console.error('Не найдены необходимые элементы!');
+                return;
+            }
+
+            console.log('Значения:', {
+                quantity: quantityInput.value,
+                price: priceInput.value
+            });
+
+            function updateTotalPrice() {
+                console.log('Обновляем сумму...');
+                try {
+                    const quantity = parseInt(quantityInput.value) || 1;
+                    const price = parseFloat(priceInput.value) || 0;
+                    const total = quantity * price;
+
+                    console.log('Расчёт:', { quantity, price, total });
+
+                    totalPriceElement.textContent = total.toLocaleString('ru-RU', {
+                        style: 'currency',
+                        currency: 'RUB'
+                    });
+                } catch (error) {
+                    console.error('Ошибка в updateTotalPrice:', error);
+                }
+            }
+
+            // События
+            quantityInput.addEventListener('input', function(e) {
+                console.log('Изменено количество:', e.target.value);
+                updateTotalPrice();
+            });
+
+            quantityInput.addEventListener('change', function(e) {
+                console.log('Изменено количество (change):', e.target.value);
+                updateTotalPrice();
+            });
+
+            // Отправка формы
+            form.addEventListener('submit', function(e) {
+                console.log('Форма отправляется!');
+                console.log('Данные формы:', {
+                    productId: document.getElementById('productId').value,
+                    quantity: quantityInput.value,
+                    price: priceInput.value,
+                    method: document.getElementById('methodDelivery').value,
+                    address: document.getElementById('addressReceiving').value
+                });
+
+                // Не прерываем отправку
+            });
+
+            // Инициализация
+            updateTotalPrice();
+            console.log('Инициализация завершена');
+        });
+
+        // ДОБАВЛЕНО: Глобальный обработчик ошибок
+        window.addEventListener('error', function(e) {
+            console.error('Глобальная ошибка:', e.message, 'в', e.filename, 'строка', e.lineno);
+        });
+    </script>
+}

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 
 namespace RazorPagesMovie.Pages
 {
-    // Модель для отображения товара на странице
     public class IndexViewModel
     {
         public int Id { get; set; }
@@ -36,23 +35,35 @@ namespace RazorPagesMovie.Pages
 
         public async Task OnGetAsync()
         {
-            // Получаем ID текущего пользователя, если он авторизован
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int buyerId))
+            // 1. Получаем email текущего пользователя из claims (без изменения авторизации)
+            var emailClaim = User.FindFirst(ClaimTypes.Email);
+            string userEmail = emailClaim?.Value;
+
+            // 2. Если пользователь авторизован, находим его ID по email
+            if (!string.IsNullOrEmpty(userEmail))
             {
-                CurrentBuyerId = buyerId;
+                var userAccount = await _context.Accounts
+                    .FirstOrDefaultAsync(a => a.Email == userEmail);
+
+                if (userAccount != null)
+                {
+                    CurrentBuyerId = userAccount.IdAccount;
+                }
             }
 
-            // Загружаем все доступные товары из базы данных
+            // 3. Загружаем ВСЕ товары (без фильтрации по статусу для индивидуальных товаров)
             var allProducts = await _context.Products
-                .Where(p => p.Status == "available")
+                .Include(p => p.IdIndivBuyerNavigation)
                 .ToListAsync();
 
-            // Для авторизованного пользователя показываем персональные товары
+            // 4. Для авторизованного пользователя ищем персональные товары
             if (CurrentBuyerId.HasValue)
             {
+                // Ищем товары, созданные специально для этого пользователя
+                // Включаем товары в статусе "reserved" (индивидуальные) и "available"
                 var individualProd = allProducts
-                    .FirstOrDefault(p => p.IdIndivBuyer == CurrentBuyerId.Value);
+                    .FirstOrDefault(p => p.IdIndivBuyer == CurrentBuyerId.Value &&
+                                         (p.Status == "reserved" || p.Status == "available"));
 
                 if (individualProd != null)
                 {
@@ -68,9 +79,9 @@ namespace RazorPagesMovie.Pages
                 }
             }
 
-            // Показываем каталог товаров всем пользователям (авторизованным и нет)
+            // 5. Показываем только общедоступные товары со статусом "available"
             CatalogProducts = allProducts
-                .Where(p => p.IdIndivBuyer == null) // Общедоступные товары
+                .Where(p => p.IdIndivBuyer == null && p.Status == "available")
                 .Select(p => new IndexViewModel
                 {
                     Id = p.IdProduct,
@@ -83,28 +94,40 @@ namespace RazorPagesMovie.Pages
                 .ToList();
         }
 
-        // Обработка заказа (требует авторизации)
         public async Task<IActionResult> OnPostOrderAsync(int productId)
         {
             // Проверяем авторизацию пользователя
             if (!User.Identity?.IsAuthenticated ?? true)
             {
                 TempData["ErrorMessage"] = "Для оформления заказа необходимо войти в систему.";
-                return RedirectToPage("/Account/Login");
+                return RedirectToPage("/Authorization");
             }
 
-            // Получаем ID текущего пользователя
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int buyerId))
+            // Получаем email текущего пользователя
+            var emailClaim = User.FindFirst(ClaimTypes.Email);
+            if (emailClaim == null || string.IsNullOrEmpty(emailClaim.Value))
             {
-                TempData["ErrorMessage"] = "Не удалось определить ваш аккаунт. Пожалуйста, войдите в систему снова.";
-                return RedirectToPage("/Account/Login");
+                TempData["ErrorMessage"] = "Не удалось определить ваш email. Пожалуйста, войдите в систему снова.";
+                return RedirectToPage("/Authorization");
             }
 
-            CurrentBuyerId = buyerId;
+            string userEmail = emailClaim.Value;
+
+            // Находим пользователя по email
+            var userAccount = await _context.Accounts
+                .FirstOrDefaultAsync(a => a.Email == userEmail);
+
+            if (userAccount == null)
+            {
+                TempData["ErrorMessage"] = "Пользователь с таким email не найден.";
+                return RedirectToPage("/Authorization");
+            }
+
+            CurrentBuyerId = userAccount.IdAccount;
 
             // Находим товар для заказа
-            var productToOrder = await _context.Products.FindAsync(productId);
+            var productToOrder = await _context.Products
+                .FirstOrDefaultAsync(p => p.IdProduct == productId);
 
             if (productToOrder == null)
             {
@@ -113,7 +136,12 @@ namespace RazorPagesMovie.Pages
             }
 
             // Проверяем, доступен ли товар для заказа
-            if (productToOrder.Status != "available" && !(productToOrder.IdIndivBuyer.HasValue && productToOrder.IdIndivBuyer.Value == CurrentBuyerId.Value))
+            bool isAvailableForOrder =
+                (productToOrder.Status == "available") ||
+                (productToOrder.IdIndivBuyer == CurrentBuyerId.Value &&
+                 (productToOrder.Status == "reserved" || productToOrder.Status == "available"));
+
+            if (!isAvailableForOrder)
             {
                 TempData["ErrorMessage"] = "Этот товар сейчас недоступен для заказа.";
                 return RedirectToPage();
@@ -134,14 +162,13 @@ namespace RazorPagesMovie.Pages
                     NumberPurchase = "ORD" + System.DateTime.Now.Ticks.ToString(),
                     IdSeller = productToOrder.IdSeller,
                     IdBuyer = CurrentBuyerId.Value,
-                    // Получаем адреса из профиля пользователя или используем заглушки
                     AddressDeparture = "Адрес продавца будет указан при подтверждении заказа",
                     AddressReceiving = "Ваш адрес доставки будет указан при оформлении заказа",
                     MethodDelivery = "courier",
                     CreatedAt = DateOnly.FromDateTime(System.DateTime.Now)
                 };
 
-                _context.Purchases.Add(newPurchase);
+                await _context.Purchases.AddAsync(newPurchase);
                 await _context.SaveChangesAsync();
 
                 // 2. Создание позиции заказа (ItemPurchase)
@@ -151,34 +178,36 @@ namespace RazorPagesMovie.Pages
                     IdProduct = productToOrder.IdProduct,
                     QuantityInPurchase = 1,
                     PriceInPurchase = productToOrder.Price,
-                    StatusItem = "pending" // Ожидает подтверждения продавцом
+                    StatusItem = "pending"
                 };
 
-                _context.ItemPurchases.Add(newItemPurchase);
+                await _context.ItemPurchases.AddAsync(newItemPurchase);
 
                 // 3. Обновление статуса товара
                 if (productToOrder.IdIndivBuyer.HasValue)
                 {
-                    // Для индивидуальных товаров
                     productToOrder.Status = "reserved";
                 }
                 else
                 {
-                    // Для общих товаров уменьшаем количество
                     productToOrder.QuantityForSale -= 1;
-                    if (productToOrder.QuantityForSale == 0)
+                    if (productToOrder.QuantityForSale <= 0)
                     {
-                        productToOrder.Status = "reserved";
+                        productToOrder.Status = "sold";
+                    }
+                    else if (productToOrder.QuantityForSale > 0)
+                    {
+                        productToOrder.Status = "available";
                     }
                 }
 
                 await _context.SaveChangesAsync();
 
-                TempData["SuccessMessage"] = $"Товар '{productToOrder.Name}' успешно добавлен в заказ №{newPurchase.NumberPurchase}. Продавец получит уведомление и скоро свяжется с вами для подтверждения заказа.";
+                TempData["SuccessMessage"] = $"Товар '{productToOrder.Name}' успешно добавлен в заказ №{newPurchase.NumberPurchase}. Продавец получит уведомление.";
             }
             catch (System.Exception ex)
             {
-                TempData["ErrorMessage"] = $"Произошла ошибка при создании заказа: {ex.Message}. Пожалуйста, попробуйте еще раз.";
+                TempData["ErrorMessage"] = $"Произошла ошибка при создании заказа: {ex.Message}.";
             }
 
             return RedirectToPage();

@@ -18,12 +18,12 @@
     }
 
     .personal-block {
-        background-color: #e6f7ff; /* Светло-голубой для персональных */
+        background-color: #e6f7ff;
         border-left: 5px solid #007bff;
     }
 
     .general-block {
-        background-color: #f0fff0; /* Светло-зеленый для общих */
+        background-color: #f0fff0;
         border-left: 5px solid #28a745;
     }
 
@@ -55,23 +55,16 @@
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .product-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    }
+        .product-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
 
     .card-title {
         font-weight: bold;
         margin-bottom: 5px;
         color: #2c3e50;
-        cursor: pointer;
-        text-decoration: underline;
-        text-decoration-color: #007bff;
-        text-underline-offset: 3px;
-    }
-
-    .card-title:hover {
-        color: #007bff;
+        text-decoration: none;
     }
 
     .card-type {
@@ -89,30 +82,42 @@
 
     .order-button {
         width: 100%;
-        padding: 8px;
+        padding: 8px 0;
         color: white;
         border: none;
         cursor: pointer;
         border-radius: 4px;
         font-weight: 500;
+        margin-top: 5px;
         transition: background-color 0.2s;
+        font-size: 0.9em;
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
     }
 
     .personal-card .order-button {
         background-color: #ff00a8;
     }
 
-    .personal-card .order-button:hover {
-        background-color: #e60095;
-    }
+        .personal-card .order-button:hover {
+            background-color: #e60095;
+        }
 
     .general-card .order-button {
         background-color: #007bff;
     }
 
-    .general-card .order-button:hover {
-        background-color: #0069d9;
-    }
+        .general-card .order-button:hover {
+            background-color: #0069d9;
+        }
+
+        .general-card .order-button.disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+            color: white;
+            pointer-events: none;
+        }
 
     .message-box {
         padding: 12px 15px;
@@ -143,46 +148,6 @@
         font-size: 0.9em;
     }
 
-    .tooltip {
-        position: relative;
-        display: inline-block;
-    }
-
-    .tooltip .tooltiptext {
-        visibility: hidden;
-        width: 250px;
-        background-color: #333;
-        color: #fff;
-        text-align: center;
-        border-radius: 6px;
-        padding: 8px;
-        position: absolute;
-        z-index: 1;
-        bottom: 125%;
-        left: 50%;
-        margin-left: -125px;
-        opacity: 0;
-        transition: opacity 0.3s;
-        font-size: 0.85em;
-        line-height: 1.4;
-    }
-
-    .tooltip .tooltiptext::after {
-        content: "";
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        margin-left: -5px;
-        border-width: 5px;
-        border-style: solid;
-        border-color: #333 transparent transparent transparent;
-    }
-
-    .tooltip:hover .tooltiptext {
-        visibility: visible;
-        opacity: 1;
-    }
-
     .card-details {
         font-size: 0.85em;
         color: #6c757d;
@@ -192,11 +157,11 @@
 
     .status-badge {
         display: inline-block;
-        padding: 3px 8px;
-        border-radius: 12px;
-        font-size: 0.75em;
+        padding: 2px 6px;
+        border-radius: 8px;
+        font-size: 0.7em;
         font-weight: bold;
-        margin-top: 5px;
+        margin-top: 3px;
     }
 
     .status-available {
@@ -206,12 +171,24 @@
 
     .auth-required {
         text-align: center;
-        padding: 20px;
+        padding: 15px;
         background-color: #fff3cd;
         border: 1px solid #ffeaa7;
         border-radius: 6px;
         margin: 15px 0;
+        font-size: 0.9em;
     }
+
+    .product-details-link {
+        color: #2c3e50;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .product-details-link:hover {
+            color: #007bff;
+            text-decoration: underline;
+        }
 </style>
 
 <div class="product-list-container">
@@ -221,7 +198,7 @@
         {
             <div class="auth-required">
                 <i class="bi bi-info-circle me-2"></i>
-                Вы можете просматривать товары без регистрации, но для оформления заказа необходимо <a asp-page="/Account/Login">войти в систему</a>.
+                Вы можете просматривать товары без регистрации, но для оформления заказа необходимо <a asp-page="/Authorization">войти в систему</a>.
             </div>
         }
     </div>
@@ -229,12 +206,7 @@
     <!-- Информационная сноска о заказе -->
     <div class="info-box">
         <i class="bi bi-info-circle me-2"></i>
-        <strong>Как оформить заказ:</strong> 
-        <span class="tooltip">
-            нажмите на кнопку "Заказать"
-            <span class="tooltiptext">После нажатия на кнопку "Заказать" система создаст новый заказ в статусе "Ожидает подтверждения". Продавец получит уведомление и сможет подтвердить или отклонить ваш заказ. Вы сможете отслеживать статус заказа в личном кабинете.</span>
-        </span>.
-        Для персональных товаров (созданных специально для вас) доступно немедленное оформление заказа.
+        <strong>Как оформить заказ:</strong> нажмите на кнопку "Заказать" под товаром, который вы хотите приобрести.
     </div>
 
     @* Сообщения об успехе или ошибке после заказа *@
@@ -256,7 +228,7 @@
                 <div class="product-card personal-card">
                     <div class="card-type">@Model.IndividualProduct.TypeArt</div>
                     <div class="card-title">
-                        <a asp-page="/Product/Details" asp-route-id="@Model.IndividualProduct.Id" class="text-decoration-none">
+                        <a asp-page="/Product/Details" asp-route-id="@Model.IndividualProduct.Id" class="product-details-link">
                             @Model.IndividualProduct.Name
                         </a>
                     </div>
@@ -264,12 +236,9 @@
                     <div class="card-details">
                         <span class="status-badge status-available">Готов к заказу</span>
                     </div>
-                    <form method="post" asp-page-handler="Order" asp-route-productId="@Model.IndividualProduct.Id">
-                        <button type="submit" class="order-button tooltip">
-                            Заказать
-                            <span class="tooltiptext">Оформить заказ на этот индивидуальный товар. После заказа товар будет зарезервирован за вами.</span>
-                        </button>
-                    </form>
+                    <a asp-page="/Order/Create" asp-route-id="@Model.IndividualProduct.Id" class="order-button">
+                        Заказать
+                    </a>
                 </div>
             </div>
         </div>
@@ -284,7 +253,7 @@
                 <div class="product-card general-card">
                     <div class="card-type">@product.TypeArt</div>
                     <div class="card-title">
-                        <a asp-page="/Product/Details" asp-route-id="@product.Id" class="text-decoration-none">
+                        <a asp-page="/Product/Details" asp-route-id="@product.Id" class="product-details-link">
                             @product.Name
                         </a>
                     </div>
@@ -292,14 +261,31 @@
                     <div class="card-details">
                         <span class="status-badge status-available">В наличии: @product.QuantityForSale шт.</span>
                     </div>
-                    <form method="post" asp-page-handler="Order" asp-route-productId="@product.Id">
-                        <button type="submit" class="order-button tooltip @(User.Identity?.IsAuthenticated ?? false ? "" : "disabled")" @(User.Identity?.IsAuthenticated ?? false ? "" : "disabled")>
-                            @(User.Identity?.IsAuthenticated ?? false ? "Заказать" : "Требуется вход")
-                            <span class="tooltiptext">Оформить заказ на этот товар. После заказа продавец подтвердит наличие товара и статус заказа.</span>
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <a asp-page="/Order/Create" asp-route-id="@product.Id" class="order-button">
+                            Заказать
+                        </a>
+                    }
+                    else
+                    {
+                        <button class="order-button disabled">
+                            Требуется вход
                         </button>
-                    </form>
+                    }
                 </div>
             }
         </div>
     </div>
 </div>
+
+<script>
+    // Добавляем обработчик для кнопок "Требуется вход"
+    document.querySelectorAll('.order-button.disabled').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Для оформления заказа необходимо войти в систему.');
+            window.location.href = '/Authorization';
+        });
+    });
+</script>
