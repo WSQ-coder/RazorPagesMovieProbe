@@ -1,57 +1,6 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Threading.Tasks;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.AspNetCore.Mvc.RazorPages;
-//using Microsoft.AspNetCore.Mvc.Rendering;
-//using RazorPagesMovie.Models;
-
-//namespace RazorPagesMovie.Pages.Product
-//{
-//    public class CreateModel : PageModel
-//    {
-//        private readonly RazorPagesMovie.Models.ArtMarketDbContext _context;
-
-//        public CreateModel(RazorPagesMovie.Models.ArtMarketDbContext context)
-//        {
-//            _context = context;
-//        }
-
-//        public IActionResult OnGet()
-//        {
-//        ViewData["IdIndivBuyer"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
-//        ViewData["IdSeller"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
-//            return Page();
-//        }
-
-//        [BindProperty]
-//        public Models.Product Product { get; set; } = default!;
-
-//        // For more information, see https://aka.ms/RazorPagesCRUD.
-//        public async Task<IActionResult> OnPostAsync()
-//        {
-//            if (!ModelState.IsValid)
-//            {
-//                return Page();
-//            }
-
-//            _context.Products.Add(Product);
-//            await _context.SaveChangesAsync();
-
-//            return RedirectToPage("./Index");
-//        }
-//    }
-//}
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using RazorPagesMovie.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace RazorPagesMovie.Pages.Product
@@ -76,15 +25,19 @@ namespace RazorPagesMovie.Pages.Product
 
         public IActionResult OnGet()
         {
+            ReturnUrl = Request.Headers["Referer"].ToString() ?? "/Index";
             PopulateDropDowns();
             return Page();
         }
 
         [BindProperty]
         public Models.Product Product { get; set; } = default!;
+        public string ReturnUrl { get; set; } = default!;
+        
 
         public async Task<IActionResult> OnPostAsync()
         {
+            //ReturnUrl = Request.Headers["Referer"].ToString() ?? "/Index";
             if (!ModelState.IsValid)
             {
                 PopulateDropDowns();
@@ -103,7 +56,7 @@ namespace RazorPagesMovie.Pages.Product
             _context.Products.Add(Product);
             await _context.SaveChangesAsync();
 
-            return RedirectToPage("./Index");
+            return RedirectToPage(ReturnUrl);
         }
 
         private void PopulateDropDowns()
@@ -122,7 +75,7 @@ namespace RazorPagesMovie.Pages.Product
             items.Insert(0, new SelectListItem
             {
                 Value = "",
-                Text = "— Выберите покупателя (Необязательно) —",
+                Text = "— Выберите покупателя индивидуального заказа (Необязательно) —",
                 Selected = true
             });
 
