@@ -76,15 +76,19 @@ namespace RazorPagesMovie.Pages.Product
 
         public IActionResult OnGet()
         {
+            ReturnUrl = Request.Headers["Referer"].ToString() ?? "/Index";
             PopulateDropDowns();
             return Page();
         }
 
         [BindProperty]
         public Models.Product Product { get; set; } = default!;
+        public string ReturnUrl { get; set; } = default!;
+        
 
         public async Task<IActionResult> OnPostAsync()
         {
+            //ReturnUrl = Request.Headers["Referer"].ToString() ?? "/Index";
             if (!ModelState.IsValid)
             {
                 PopulateDropDowns();
@@ -103,7 +107,7 @@ namespace RazorPagesMovie.Pages.Product
             _context.Products.Add(Product);
             await _context.SaveChangesAsync();
 
-            return RedirectToPage("./Index");
+            return RedirectToPage(ReturnUrl);
         }
 
         private void PopulateDropDowns()

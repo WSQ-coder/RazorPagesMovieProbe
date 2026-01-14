@@ -16,6 +16,7 @@ namespace RazorPagesMovie.Pages.Product
         public Models.Product Product { get; set; } = default!;
         public string ReturnUrl { get; set; } = default!;
 
+
         public async Task<IActionResult> OnGetAsync(int? id)
         {
             if (id == null)
