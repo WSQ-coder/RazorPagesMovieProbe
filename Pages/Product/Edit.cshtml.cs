@@ -18,8 +18,6 @@ namespace RazorPagesMovie.Pages.Product
         public Models.Product Product { get; set; } = default!;
         public string ReturnUrl { get; set; } = default!;
 
-        [BindProperty] // Добавлено для сохранения URL между GET и POST
-        public string ReturnUrl { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(int? id, string? returnUrl)
         {
