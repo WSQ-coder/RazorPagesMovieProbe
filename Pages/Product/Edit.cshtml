@@ -11,6 +11,9 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     <input type="hidden" asp-for="Product.IdProduct" />
 
+    @* Скрытое поле для сохранения пути возврата *@
+    <input type="hidden" asp-for="ReturnUrl" />
+
     <div class="form-group mb-3">
         <label asp-for="Product.Name" class="control-label">Название товара</label>
         <input asp-for="Product.Name" class="form-control" />
@@ -46,7 +49,6 @@
     <div class="form-group mb-3">
         <label asp-for="Product.Status" class="control-label">Статус</label>
         <select asp-for="Product.Status" class="form-control">
-            <option value="">-- Выберите статус --</option>
             <option value="available">В наличии</option>
             <option value="reserved">Зарезервирован</option>
             <option value="sold">Продан</option>
@@ -57,7 +59,6 @@
     <div class="form-group mb-3">
         <label asp-for="Product.IdIndivBuyer" class="control-label">Индивидуальный покупатель (опционально)</label>
         <select asp-for="Product.IdIndivBuyer" class="form-control" asp-items="ViewBag.IdIndivBuyer">
-            <option value="">— Не выбран —</option>
         </select>
     </div>
 
@@ -66,9 +67,3 @@
         <a href="@Model.ReturnUrl" class="btn btn-secondary">Вернуться</a>
     </div>
 </form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

@@ -1,12 +1,7 @@
-п»їusing System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using RazorPagesMovie.Models;
 
 namespace RazorPagesMovie.Pages.Product
 {
@@ -21,35 +16,43 @@ namespace RazorPagesMovie.Pages.Product
 
         [BindProperty]
         public Models.Product Product { get; set; } = default!;
+
+        [BindProperty] // Добавлено для сохранения URL между GET и POST
         public string ReturnUrl { get; set; } = default!;
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? id, string? returnUrl)
         {
             if (id == null)
             {
                 return NotFound();
             }
-            ReturnUrl = Request.Headers["Referer"].ToString() ?? "/Index";
 
+            // Логика возврата: приоритет параметру, затем Referer 
+            ReturnUrl = returnUrl ?? Request.Headers["Referer"].ToString() ?? "/Product/Index";
 
-            var product =  await _context.Products.FirstOrDefaultAsync(m => m.IdProduct == id);
+            var product = await _context.Products.FirstOrDefaultAsync(m => m.IdProduct == id);
             if (product == null)
             {
                 return NotFound();
             }
             Product = product;
-           ViewData["IdIndivBuyer"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
-           ViewData["IdSeller"] = new SelectList(_context.Accounts, "IdAccount", "IdAccount");
+
+            PopulateDropDowns(); // Заполнение списков при загрузке 
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more information, see https://aka.ms/RazorPagesCRUD.
         public async Task<IActionResult> OnPostAsync()
         {
             if (!ModelState.IsValid)
             {
+                PopulateDropDowns(); // Перезагрузка списков, если форма не валидна [cite: 12]
                 return Page();
+            }
+
+            // Обработка нулевого покупателя
+            if (Product.IdIndivBuyer == 0)
+            {
+                Product.IdIndivBuyer = null;
             }
 
             _context.Attach(Product).State = EntityState.Modified;
@@ -70,7 +73,34 @@ namespace RazorPagesMovie.Pages.Product
                 }
             }
 
-            return RedirectToPage("./Index");
+            // Возврат на предыдущую страницу 
+            return Redirect(ReturnUrl);
+        }
+
+        private void PopulateDropDowns()
+        {
+            // 1. Продавцы: фильтруем по роли "seller" и берем AccountName для отображения 
+            var sellers = _context.Accounts
+                .Include(a => a.IdRoleNavigation)
+                .Where(a => a.IdRoleNavigation.RoleName == "seller")
+                .ToList();
+            ViewData["IdSeller"] = new SelectList(sellers, "IdAccount", "AccountName", Product?.IdSeller);
+
+            // 2. Покупатели: фильтруем по роли "buyer" и добавляем пустой пункт [cite: 11]
+            var buyers = _context.Accounts
+                .Include(a => a.IdRoleNavigation)
+                .Where(a => a.IdRoleNavigation.RoleName == "buyer")
+                .ToList();
+
+            var buyersList = buyers.Select(b => new SelectListItem
+            {
+                Value = b.IdAccount.ToString(),
+                Text = b.AccountName,
+                Selected = b.IdAccount == Product?.IdIndivBuyer
+            }).ToList();
+
+            buyersList.Insert(0, new SelectListItem { Value = "", Text = "— Не выбран —" });
+            ViewData["IdIndivBuyer"] = buyersList;
         }
 
         private bool ProductExists(int id)
