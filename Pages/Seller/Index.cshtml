@@ -90,17 +90,21 @@
                     <h2 class="h5 mb-0">Индивидуальные заказы</h2>
                 </div>
                 <div class="card-body">
-                    @if (Model.CustomOrders != null && Model.CustomOrders.Any())
+                    @if (Model.OrdersItems != null && Model.OrdersItems.Any())
                     {
                         <div class="list-group">
-                            @foreach (var order in Model.CustomOrders)
+
+                            @foreach (var order in Model.OrdersItems)
                             {
                                 <div class="list-group-item list-group-item-action mb-2">
                                     <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">Заказ от @order.IdBuyerNavigation?.AccountName</h5>
-                                        <small class="text-muted">№ @order.IdProductionPurchase</small>
+                                        <br /><small class="text-muted">Заказ N @order.IdPurchaseNavigation.NumberPurchase</small>
+                                        <br /><small class="text-muted">Название: @order.IdProductNavigation.Name</small>
+                                        <br /><small class="text-muted">Адрес доставки: @order.IdPurchaseNavigation.AddressDeparture</small>
+                                        <br /><small class="text-muted">Количество: @order.QuantityInPurchase</small>
+                                        <br /><small class="text-muted">Цена: @order.PriceInPurchase</small>
                                     </div>
-                                    <p class="mb-1">
+                                    @* <p class="mb-1">
                                         @if (string.IsNullOrEmpty(order.TextAccounts))
                                         {
                                             <text>Без описания</text>
@@ -125,9 +129,11 @@
                                             <a class="btn btn-sm btn-primary mt-1" asp-page="/Seller/CreateCustomProduct" asp-route-id="@order.IdProductionPurchase">
                                                 Создать товар
                                             </a>
-                                        }
-
+                                        } 
                                     </div>
+                                        *@
+
+                                    
                                 </div>
                             }
                         </div>
