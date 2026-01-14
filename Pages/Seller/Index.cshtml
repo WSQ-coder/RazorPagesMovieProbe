@@ -33,6 +33,9 @@
                                         <th>Действия</th>
                                     </tr>
                                 </thead>
+
+
+
                                 <tbody>
                                     @foreach (var item in Model.Products)
                                     {
@@ -52,6 +55,10 @@
                                                 else
                                                 {
                                                     <span class="badge bg-secondary">Продан</span>
+                                                }
+                                                @if(item.IdIndivBuyer != null)
+                                                {
+                                                    <br><span class="badge bg-secondary">Персональный заказ</span>
                                                 }
                                             </td>
                                             <td>
