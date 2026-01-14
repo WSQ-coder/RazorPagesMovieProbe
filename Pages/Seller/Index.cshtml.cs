@@ -22,15 +22,19 @@ namespace RazorPagesMovie.Pages.Seller
         public IList<Models.Product> Products { get; set; }
         public IList<RazorPagesMovie.Models.ItemPurchase> OrdersItems { get; set; } = default!;
 
+        public int? CurrentUserId { get; private set; }
+
         public async Task<IActionResult> OnGetAsync()
         {
-            // Для тестирования используем ID продавца = 2
-            var currentUserId = 2;
+            if (int.TryParse(User.FindFirst("idaccount")?.Value, out int id))
+            {
+                CurrentUserId = id;
+            }
 
             // Загружаем данные продавца
             SellerAccount = await _context.Accounts
                 .Include(a => a.IdRoleNavigation)
-                .FirstOrDefaultAsync(m => m.IdAccount == currentUserId);
+                .FirstOrDefaultAsync(m => m.IdAccount == CurrentUserId);
 
             if (SellerAccount == null)
             {
@@ -45,24 +49,24 @@ namespace RazorPagesMovie.Pages.Seller
                     // Если нет продавцов, создаем тестовые данные
                     SellerAccount = new Models.Account
                     {
-                        IdAccount = currentUserId,
+                        IdAccount = CurrentUserId ?? 0,
                         AccountName = "Тестовый продавец",
                         IdRoleNavigation = new Models.Role { RoleName = "seller" }
                     };
                 }
-                currentUserId = SellerAccount.IdAccount;
+                CurrentUserId = SellerAccount.IdAccount;
             }
 
             // Загружаем товары продавца
             Products = await _context.Products
-                .Where(p => p.IdSeller == currentUserId)
+                .Where(p => p.IdSeller == CurrentUserId)
                 .ToListAsync();
 
             // Загружаем индивидуальные заказы для продавца
             OrdersItems = await _context.ItemPurchases
                 .Include(a => a.IdProductNavigation)
                 .Include(a => a.IdPurchaseNavigation)
-                .Where(a => a.IdProductNavigation.IdSeller == currentUserId)
+                .Where(a => a.IdProductNavigation.IdSeller == CurrentUserId)
                 .ToListAsync();
 
             //.OrderByDescending(po => po.IdProductionPurchase)
