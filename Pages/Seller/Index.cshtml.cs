@@ -20,7 +20,7 @@ namespace RazorPagesMovie.Pages.Seller
 
         public Models.Account SellerAccount { get; set; }
         public IList<Models.Product> Products { get; set; }
-        public IList<Models.ProductionPurchase> CustomOrders { get; set; }
+        public IList<RazorPagesMovie.Models.ItemPurchase> OrdersItems { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -59,11 +59,20 @@ namespace RazorPagesMovie.Pages.Seller
                 .ToListAsync();
 
             // Загружаем индивидуальные заказы для продавца
-            CustomOrders = await _context.ProductionPurchases
-                .Include(po => po.IdBuyerNavigation)
-                .Where(po => po.IdSeller == currentUserId)
-                .OrderByDescending(po => po.IdProductionPurchase)
+            OrdersItems = await _context.ItemPurchases
+                .Include(a => a.IdProductNavigation)
+                .Include(a => a.IdPurchaseNavigation)
+                .Where(a => a.IdProductNavigation.IdSeller == currentUserId)
                 .ToListAsync();
+
+            //.OrderByDescending(po => po.IdProductionPurchase)
+
+            //var itemPurchasesFull = await _context.ItemPurchases
+            //    .Include(ip => ip.IdProductNavigation)
+            //    .ThenInclude(p => p.IdSellerNavigation) // Получаем данные продавца товара 
+            //    .Include(ip => ip.IdPurchaseNavigation)
+            //    .ThenInclude(pur => pur.IdBuyerNavigation) // Получаем данные покупателя заказа 
+            //    .ToListAsync();
 
             return Page();
         }
