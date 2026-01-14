@@ -21,6 +21,7 @@ namespace RazorPagesMovie.Pages.Product
 
         [BindProperty]
         public Models.Product Product { get; set; } = default!;
+        public string ReturnUrl { get; set; } = default!;
 
         public async Task<IActionResult> OnGetAsync(int? id)
         {
@@ -28,6 +29,8 @@ namespace RazorPagesMovie.Pages.Product
             {
                 return NotFound();
             }
+            ReturnUrl = Request.Headers["Referer"].ToString() ?? "/Index";
+
 
             var product =  await _context.Products.FirstOrDefaultAsync(m => m.IdProduct == id);
             if (product == null)
